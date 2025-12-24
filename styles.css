@@ -80,30 +80,3 @@ h1, h2, h3, h4, h5, h6 {
 	gap: 20px;
 	justify-content: center;
 }
-
-.deal {
-	background: #f9f9f9;
-	border: 1px solid #ddd;
-	border-radius: 8px;
-	padding: 16px;
-	width: 250px;
-	box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-	text-align: center;
-}
-.deal h2 {
-	font-size: 1.2em;
-	margin-bottom: 10px;
-}
-.deal a {
-	display: inline-block;
-	margin-top: 10px;
-	color: #fff;
-	background: #0078d7;
-	padding: 8px 16px;
-	border-radius: 4px;
-	text-decoration: none;
-	transition: background 0.2s;
-}
-.deal a:hover {
-	background: #005fa3;
-}

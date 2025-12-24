@@ -1,27 +1,29 @@
 let matchingDeals = [];
 function showHints(hints) {
+
   const hintsContainer = document.querySelector(".search-hints");
   hintsContainer.innerHTML = "";
   const hintList = hintsContainer.appendChild(document.createElement("ul"));
   hints.forEach((hint) => {
     const hintEl = hintList.appendChild(document.createElement("li"))
-    hintEl.innerHTML = `<a href="index.html?gameID=${hint.gameID}">${hint.external}</a>`;
+    hintEl.innerHTML = `<a href="game.html?appid=${hint.id}&slug=${hint.slug}">${hint.title}</a>`;
   });
 
 }
 
-function renderDeals(game) {
+function renderDeals(game, slug) {
   const wrapper = document.querySelector(".wrapper");
   wrapper.innerHTML = "";
+  document.querySelector(".title").innerText = slug;
   game.deals.forEach((deal) => {
     const dealDiv = document.createElement("div");
     dealDiv.classList.add("deal");
     dealDiv.innerHTML = `
-      <h2>${game.info.title}</h2>
-      <p>Normal Price: $${deal.retailPrice}</p>
-      <p>Sale Price: $${deal.price}</p>
-      <p>Savings: ${parseFloat(deal.savings).toFixed(2)}%</p>
-      <a href="https://www.cheapshark.com/redirect?dealID=${deal.dealID}" target="_blank">View Deal</a>
+      <p>Store: ${deal.shop.name}</p>
+      <p>Normal Price: $${deal.regular.amount}</p>
+      <p>Sale Price: $${deal.price.amount}</p>
+      <p>Discount: ${deal.cut}%</p>
+      <a href="${deal.url}" target="_blank">View Deal</a>
     `;
     wrapper.appendChild(dealDiv);
   });
@@ -31,14 +33,19 @@ document.addEventListener("DOMContentLoaded", () => {
   //loading deals info based on url parameter
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
-  const gameID = urlParams.get('gameID');
+  const appID = urlParams.get('appid');
+  const slug = urlParams.get('slug');
 
-  // If there's a gameID in the URL, fetch and display that game
-  if (gameID) {
-    fetch(`https://www.cheapshark.com/api/1.0/games?id=${gameID}`)
+
+  // If there's a appID in the URL, fetch and display that game
+  if (appID) {
+    fetch(`https://api.isthereanydeal.com/games/prices/v3?key=a6e7d7f3739530d34366b7b5d78ffbbbe90d75fe&country=US`, {
+      method: 'POST',
+      body: JSON.stringify([appID])
+    })
       .then((response) => response.json())
       .then((gameInfo) => {
-        renderDeals(gameInfo);
+        renderDeals(gameInfo[0], slug);
       })
       .catch((error) => console.error("Error fetching game info:", error));
   }
@@ -51,12 +58,13 @@ document.addEventListener("DOMContentLoaded", () => {
         showHints([]);
         return;
       }
-      fetch(`https://www.cheapshark.com/api/1.0/games?title=${searchTerm}&limit=5`)
+      fetch(`https://api.isthereanydeal.com/games/search/v1?key=a6e7d7f3739530d34366b7b5d78ffbbbe90d75fe&title=${searchTerm}&results=5`)
         .then((response) => response.json())
         .then((data) => {
-          matchingDeals = data;
-          const filteredHints = matchingDeals.filter((deal) =>
-            deal.external.toLowerCase().includes(searchTerm)
+
+          matchingGames = data;
+          const filteredHints = matchingGames.filter((game) =>
+            game.title.toLowerCase().includes(searchTerm)
           );
           showHints(filteredHints)
         })
