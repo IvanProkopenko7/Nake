@@ -4,21 +4,66 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
-  <title>Main Page</title>
+  <title>GameDeals — Search Deals</title>
 </head>
 
 <body>
-  <div class="search-box">
-    <div class="search-input">
-      <input type="text" id="searchBar" placeholder="Search games..." autocomplete="off">
-      <button id="searchButton">Search</button>
+  <header class="header">
+    <div class="container header-inner">
+      <a href="index.html" class="home-icon">GameDeals</a>
+      <nav class="nav" aria-label="Main navigation">
+        <div id="authArea" class="auth-area">
+          <span id="userStatus" class="user-status">Not signed in</span>
+          <button id="loginBtn" class="btn small">Login</button>
+          <button id="logoutBtn" class="btn small hidden">Logout</button>
+        </div>
+      </nav>
     </div>
-    <div class="search-hints">
+  </header>
+
+  <main class="main container">
+    <section class="hero">
+      <h1 class="hero-title">Find the best PC game deals</h1>
+      <p class="hero-sub">Search across stores and compare prices instantly.</p>
+
+      <div class="search-box">
+        <div class="search-input">
+          <input type="text" id="searchBar" placeholder="Search games..." autocomplete="off">
+          <button id="searchButton">Search</button>
+        </div>
+        <div class="search-hints"></div>
+      </div>
+    </section>
+
+    <div class="wrapper"></div>
+  </main>
+
+  <!-- Auth modal -->
+  <div id="authModal" class="auth-modal hidden" aria-hidden="true">
+    <div class="auth-modal_inner">
+      <h3 id="authModalTitle">Login</h3>
+      <form id="authForm">
+        <input type="email" id="authEmail" placeholder="Email" required>
+        <input type="password" id="authPassword" placeholder="Password" required minlength="6">
+        <div class="auth-actions">
+          <button type="submit" id="authSubmit" class="btn">Continue</button>
+          <button type="button" id="authCancel" class="btn ghost">Cancel</button>
+        </div>
+        <div class="auth-toggle">
+          <label>
+            <input type="checkbox" id="authMode"> Create account (sign up)
+          </label>
+        </div>
+        <div id="authMessage" class="auth-message" role="status" aria-live="polite"></div>
+      </form>
     </div>
   </div>
-  <div class="wrapper"></div>
-  <script src="scripts.js"></script>
+
+  <script type="module" src="scripts.js"></script>
 </body>
 
 </html>

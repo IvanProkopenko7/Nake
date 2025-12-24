@@ -1,82 +1,165 @@
-
-*, *::before, *::after {
-  box-sizing: border-box;
+:root{
+  /* Brighter dark-gray palette inspired by isthereanydeal.com */
+  --bg:#111827;     /* base background: dark gray (brighter than near-black) */
+  --card:#1f2937;   /* cards and panels */
+  --muted:#9aa4b2;  /* lighter muted text for better readability */
+  --accent:#7c3aed; /* preserved purple accent */
+  --glass: rgba(255,255,255,0.06);
+  --surface:#0f1724; /* input surface */
+  --white:#ffffff;
 }
 
-*:not(dialog) {
-  margin: 0;
+/* Base reset */
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+ul{list-style:none;padding:0;margin:0}
+a{text-decoration:none;color:inherit}
+
+body{
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  background: linear-gradient(180deg, #0f1724 0%, var(--bg) 60%);
+  color:var(--white);
+  -webkit-font-smoothing:antialiased;
+  line-height:1.4;
+  min-height:100vh;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  html {
-    interpolate-size: allow-keywords;
-  }
+.container{
+  max-width:1100px;
+  margin:0 auto;
+  padding:0 20px;
 }
 
-body {
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
+.header{
+  padding:20px 0;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+}
+.header-inner{
+  display:flex;
+  align-items:center;
+  gap:20px;
+}
+.home-icon{
+  font-weight:700;
+  font-size:20px;
+  color:var(--white);
 }
 
-img, picture, video, canvas, svg {
-  display: block;
-  max-width: 100%;
+.hero{
+  padding:48px 0 28px;
+  text-align:center;
+}
+.hero-title{
+  font-weight:700;
+  font-size:28px;
+  margin:0 0 8px;
+}
+.hero-sub{
+  color:var(--muted);
+  margin:0 0 18px;
 }
 
-input, button, textarea, select {
-  font: inherit;
+.search-box{
+  display:inline-block;
+  position:relative;
+  width:100%;
+  max-width:720px;
+  margin:0 auto;
 }
 
-p, h1, h2, h3, h4, h5, h6 {
-  overflow-wrap: break-word;
+.search-input{
+  display:flex;
+  gap:8px;
+  align-items:center;
 }
 
-p {
-  text-wrap: pretty;
-}
-h1, h2, h3, h4, h5, h6 {
-  text-wrap: balance;
+.search-input input{
+  flex:1;
+  padding:12px 14px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,0.08);
+  background:var(--surface);
+  color:var(--white);
+  outline:none;
+  box-shadow:0 6px 18px rgba(2,6,23,0.6) inset;
 }
 
-#root, #__next {
-  isolation: isolate;
+.search-input button{
+  padding:10px 16px;
+  border-radius:10px;
+  border:none;
+  background:linear-gradient(90deg,var(--accent),#5b21b6);
+  color:white;
+  cursor:pointer;
+  font-weight:600;
 }
 
+.search-hints{
+  position:absolute;
+  left:0;right:0;top:56px;
+  /* Use a darker semi-opaque background and blur to match the new card tone */
+  background: rgba(31,41,55,0.92);
+  backdrop-filter: blur(6px);
+  border-radius:8px;
+  box-shadow:0 8px 30px rgba(2,6,23,0.6);
+  padding:8px;
+  max-height:260px;
+  overflow:auto;
+  z-index:100;
+}
+.search-hints li{padding:8px;border-radius:6px;color:var(--white)}
+.search-hints li:hover{background:rgba(255,255,255,0.03)}
 
-.search-input {
-  display: flex;
-  align-items: center;
-  margin: 20px 0 0 20px;
+/* Wrapper where deals render */
+.wrapper{padding:24px 0}
+
+.deal{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:18px;
+  margin-bottom:12px;
+  background:linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,0.06);
+  box-shadow:0 8px 24px rgba(2,6,23,0.55);
 }
-.search-input * {
-  padding: 10px 5px;
+.deal h2{font-size:16px;margin:0 0 6px}
+.deal p{margin:0;color:var(--muted);font-size:13px}
+.deal a{margin-left:12px;color:var(--accent);font-weight:600}
+
+.deals-container{width:100%}
+.game-list_header{display:grid;grid-template-columns:1fr 120px 90px;gap:8px;padding:10px 14px;border-radius:8px;color:var(--muted)}
+.game-list_link{display:grid;grid-template-columns:1fr 120px 90px;gap:8px;padding:10px 14px;border-radius:8px}
+.game-list_link:hover{background:rgba(255,255,255,0.03)}
+
+.title{margin:18px 0 8px;font-size:20px}
+
+.footer{padding:20px 0;color:var(--muted);text-align:center;border-top:1px solid rgba(255,255,255,0.06)}
+.footer a{color:var(--muted)}
+
+/* Small screens */
+@media (max-width:720px){
+  .hero-title{font-size:20px}
+  .game-list_header, .game-list_link{grid-template-columns:1fr 100px 80px}
+  .search-input{flex-direction:row}
+  .search-input input{padding:10px}
+  .deal{flex-direction:column;align-items:flex-start}
 }
-.search-box {
-  display: flex;
-  flex-direction: column;
-}
-#searchBar {
-	display: block;
-	width: 300px;
-	font-size: 16px;
-	border: 1px solid #ccc;
-	border-radius: 4px;
-}
-.search-hints {
-  width: 320px;
-}
-.search-hints ul {
-  list-style: none;
-  padding: 0;
-  margin-left: 20px;
-}
-.search-hints li {
-  padding: 5px 0;
-  border: 1px solid #000000;
-}
-.wrapper {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 20px;
-	justify-content: center;
-}
+
+/* Auth UI */
+.auth-area{display:flex;gap:8px;align-items:center}
+.user-status{color:var(--muted);font-size:14px}
+.btn{padding:8px 12px;border-radius:8px;border:none;background:linear-gradient(90deg,var(--accent),#5b21b6);color:white;cursor:pointer}
+.btn.small{padding:6px 10px;font-size:13px}
+.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06)}
+.hidden{display:none!important}
+
+.auth-modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);z-index:300}
+.auth-modal_inner{width:360px;background:var(--card);padding:20px;border-radius:10px;border:1px solid rgba(255,255,255,0.04)}
+.auth-modal input{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);margin:8px 0;background:var(--surface);color:var(--white)}
+.auth-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
+.auth-toggle{color:var(--muted);font-size:13px;margin-top:8px}
+.auth-message{color:var(--muted);margin-top:8px;font-size:13px}
+

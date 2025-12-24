@@ -4,21 +4,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
-  <title>Game Deals</title>
+  <title>GameDeals — Game</title>
 </head>
 
 <body>
-  <div class="search-box">
-    <div class="search-input">
-      <input type="text" id="searchBar" placeholder="Search games..." autocomplete="off">
-      <button id="searchButton">Search</button>
+  <header class="header">
+    <div class="container header-inner">
+      <a href="/index.html" class="home-icon">GameDeals</a>
+      <div class="search-box">
+        <div class="search-input">
+          <input type="text" id="searchBar" placeholder="Search games..." autocomplete="off">
+          <button id="searchButton">Search</button>
+        </div>
+        <div class="search-hints"></div>
+      </div>
     </div>
-    <div class="search-hints">
+  </header>
+
+  <main class="main container">
+    <h1 class="title"></h1>
+    <div class="deals-container">
+      <ul class="game-list">
+        <li class="game-list_header">
+          <span class="game-list_header-title">Store</span>
+          <span class="game-list_header-price">Price</span>
+          <span class="game-list_header-discount">Discount</span>
+        </li>
+      </ul>
     </div>
-  </div>
-  <h1 class="title"></h1>
-  <div class="wrapper"></div>
+  </main>
+
+
   <script src="scripts.js"></script>
 </body>
 
