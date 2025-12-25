@@ -1,10 +1,12 @@
 // Firebase (CDN modular import)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+const IS_THERE_ANY_DEAL_API_KEY = "__IS_THERE_ANY_DEAL_API_KEY__";
+const PUBLIC_FIREBASE_API_KEY = "__PUBLIC_FIREBASE_API_KEY__";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDhj6QjW99aKOV3HvlH9HsWGpksQ0kToUY",
+  apiKey: PUBLIC_FIREBASE_API_KEY,
   authDomain: "nake-10402.firebaseapp.com",
   projectId: "nake-10402",
   storageBucket: "nake-10402.firebasestorage.app",
@@ -44,20 +46,24 @@ function updateAuthUI(user) {
   const userStatus = document.getElementById('userStatus');
   const loginBtn = document.getElementById('loginBtn');
   const logoutBtn = document.getElementById('logoutBtn');
+
+  // If none of the auth UI elements exist on this page, skip silently
+  if (!userStatus && !loginBtn && !logoutBtn) return;
+
   if (user) {
-    userStatus.innerText = user.email || 'Signed in';
-    loginBtn.classList.add('hidden');
-    logoutBtn.classList.remove('hidden');
+    if (userStatus) userStatus.innerText = user.email || 'Signed in';
+    if (loginBtn) loginBtn.classList.add('hidden');
+    if (logoutBtn) logoutBtn.classList.remove('hidden');
   } else {
-    userStatus.innerText = 'Not signed in';
-    loginBtn.classList.remove('hidden');
-    logoutBtn.classList.add('hidden');
+    if (userStatus) userStatus.innerText = 'Not signed in';
+    if (loginBtn) loginBtn.classList.remove('hidden');
+    if (logoutBtn) logoutBtn.classList.add('hidden');
   }
-}
+} 
 
 // Wire up auth controls after DOM loaded (we also add listeners in DOMContentLoaded later)
 
-let matchingDeals = [];
+let matchingGames = [];
 function showHints(hints) {
 
   const hintsContainer = document.querySelector(".search-hints");
@@ -102,13 +108,16 @@ function getCachedData(key) {
   return JSON.parse(cachedItem).data;
 }
 function clearDayOldStorage() {
-  let keys = Object.keys(localStorage), i = 0, key;
-
-  for (; key = keys[i]; i++) {
-    if (localStorage.getItem(key).timestamp + FULL_CACHE_DURATION < Date.now()) {
+  Object.keys(localStorage).forEach(key => {
+    try {
+      const { timestamp } = JSON.parse(localStorage.getItem(key));
+      if (timestamp + FULL_CACHE_DURATION < Date.now()) {
+        localStorage.removeItem(key);
+      }
+    } catch (e) {
       localStorage.removeItem(key);
     }
-  }
+  });
 }
 
 function setCachedData(key, data) {
@@ -138,7 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (cachedDeals) {
       renderDeals(cachedDeals, slug);
     } else {
-      fetch(`https://api.isthereanydeal.com/games/prices/v3?key=a6e7d7f3739530d34366b7b5d78ffbbbe90d75fe&country=US`, {
+      fetch(`https://api.isthereanydeal.com/games/prices/v3?key=${IS_THERE_ANY_DEAL_API_KEY}&country=US`, {
         method: 'POST',
         body: JSON.stringify([appID])
       })
@@ -160,7 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
         showHints([]);
         return;
       }
-      fetch(`https://api.isthereanydeal.com/games/search/v1?key=a6e7d7f3739530d34366b7b5d78ffbbbe90d75fe&title=${searchTerm}&results=5`)
+      fetch(`https://api.isthereanydeal.com/games/search/v1?key=${IS_THERE_ANY_DEAL_API_KEY}&title=${searchTerm}&results=5`)
         .then((response) => response.json())
         .then((data) => {
           matchingGames = data;
@@ -208,8 +217,8 @@ document.addEventListener("DOMContentLoaded", () => {
           closeAuthModal();
         })
         .catch((error) => {
-          console.error('Signup error', error);
-          showAuthMessage(error.message || 'Signup failed', true);
+          console.error('Signup error', error.code, error.message, error);
+          showAuthMessage(`${error.code}: ${error.message}`, true);
         });
     } else {
       signInWithEmailAndPassword(auth, email, password)
@@ -218,8 +227,8 @@ document.addEventListener("DOMContentLoaded", () => {
           closeAuthModal();
         })
         .catch((error) => {
-          console.error('Signin error', error);
-          showAuthMessage(error.message || 'Sign in failed', true);
+          console.error('Signin error', error.code, error.message, error);
+          showAuthMessage(`${error.code}: ${error.message}`, true);
         });
     }
   });
