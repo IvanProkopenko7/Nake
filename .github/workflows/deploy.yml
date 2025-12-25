@@ -1,0 +1,40 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Inject API keys into JS
+        run: |
+          sed -i "s|__IS_THERE_ANY_DEAL_API_KEY__|${{ secrets.IS_THERE_ANY_DEAL_API_KEY }}|g" scripts.js
+          sed -i "s|__PUBLIC_FIREBASE_API_KEY__|${{ secrets.PUBLIC_FIREBASE_API_KEY }}|g" scripts.js
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
