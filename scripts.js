@@ -22,8 +22,29 @@ async function initAuth0() {
       throw new Error('Auth0 configuration missing. Please check your .env.local file for VITE_AUTH0_DOMAIN and VITE_AUTH0_CLIENT_ID');
     }
 
-    // Validate domain format
-    if (!domain.includes('.auth0.com') && !domain.includes('.us.auth0.com') && !domain.includes('.eu.auth0.com') && !domain.includes('.au.auth0.com')) {
+    // Normalize and validate Auth0 domain format
+    let hostname = domain;
+    try {
+      // Allow developers to accidentally include protocol, e.g. "https://your-domain.auth0.com"
+      if (typeof domain === 'string' && (domain.startsWith('http://') || domain.startsWith('https://') || domain.includes('://'))) {
+        const parsed = new URL(domain);
+        hostname = parsed.hostname;
+      }
+    } catch (e) {
+      // If URL parsing fails, fall back to the raw domain string
+      hostname = domain;
+    }
+
+    const allowedAuth0Suffixes = [
+      '.auth0.com',
+      '.us.auth0.com',
+      '.eu.auth0.com',
+      '.au.auth0.com'
+    ];
+
+    const hasValidAuth0Suffix = allowedAuth0Suffixes.some(suffix => typeof hostname === 'string' && hostname.endsWith(suffix));
+
+    if (!hasValidAuth0Suffix) {
       console.warn('Auth0 domain format might be incorrect. Expected format: your-domain.auth0.com');
     }
 
