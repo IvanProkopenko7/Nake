@@ -7,39 +7,61 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="/style.css">
   <title>Nake</title>
 </head>
 
 <body>
-  <header class="header">
-    <div class="container header-inner">
-      <a href="/index.html" class="home-icon">NAKE</a>
-      <div class="search-box">
-        <div class="search-input">
-          <input type="text" id="searchBar" placeholder="Search games..." autocomplete="off">
-          <button id="searchButton">Search</button>
+  <div class="wrapper">
+    <header class="header">
+      <div class="container header-inner">
+        <a href="/index.html" class="home-icon">NAKE</a>
+        <div class="search-box">
+          <div class="search-container">
+            <div class="search-input">
+              <input type="text" id="searchBar" placeholder="Search games..." autocomplete="off">
+              <button id="searchButton" class="button">Search</button>
+            </div>
+            <div class="search-hints"></div>
+          </div>
         </div>
-        <div class="search-hints"></div>
+        <div id="logged-out" class="action-card">
+          <button id="login-btn" class="button login">Log In</button>
+        </div>
+        <div id="logged-in" class="logged-in-section" style="display: none; align-items: center;">
+          <div id="profile" class="profile-card"></div>
+          <button id="logout-btn" class="button logout">Log Out</button>
+        </div>
+        <!-- Loading State -->
+        <div id="loading" class="loading-state">
+          <div class="loading-text">Loading...</div>
+        </div>
+
+        <!-- Error State -->
+        <div id="error" class="error-state" style="display: none;">
+          <div class="error-title">Oops!</div>
+          <div class="error-message">Something went wrong</div>
+          <div id="error-details" class="error-sub-message"></div>
+        </div>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <main class="main container">
-    <h1 class="title"></h1>
-    <div class="deals-container">
-      <ul class="game-list">
-        <li class="game-list_header">
-          <span class="game-list_header-title">Store</span>
-          <span class="game-list_header-price">Price</span>
-          <span class="game-list_header-discount">Discount</span>
-        </li>
-      </ul>
-    </div>
-  </main>
+    <main class="main container">
+      <h1 class="title"></h1>
+      <div class="deals-container">
+        <ul class="game-list">
+          <li class="game-list_header">
+            <span class="game-list_header-title">Store</span>
+            <span class="game-list_header-price">Price</span>
+            <span class="game-list_header-discount">Discount</span>
+          </li>
+        </ul>
+      </div>
+    </main>
+  </div>
 
 
-  <script type="module" src="scripts.js"></script>
+  <script type="module" src="/scripts.js"></script>
 </body>
 
 </html>

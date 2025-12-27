@@ -1,67 +1,218 @@
-// Firebase (CDN modular import)
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-const PROXY_BASE = "https://itad-proxy.ivanprokopenkose7en.workers.dev";
 
+import { createAuth0Client } from '@auth0/auth0-spa-js';
+// DOM elements
+const loading = document.getElementById('loading');
+const error = document.getElementById('error');
+const errorDetails = document.getElementById('error-details');
+const loggedOutSection = document.getElementById('logged-out');
+const loggedInSection = document.getElementById('logged-in');
+const loginBtn = document.getElementById('login-btn');
+const logoutBtn = document.getElementById('logout-btn');
+const profileContainer = document.getElementById('profile');
+let auth0Client;
 
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyDhj6QjW99aKOV3HvlH9HsWGpksQ0kToUY",
-  authDomain: "nake-10402.firebaseapp.com",
-  projectId: "nake-10402",
-  storageBucket: "nake-10402.firebasestorage.app",
-  messagingSenderId: "382102518022",
-  appId: "1:382102518022:web:64640513cb24e62cc8c687",
-  measurementId: "G-JNCLBKDNET"
-};
+// Initialize Auth0 client
+async function initAuth0() {
+  try {
+    // Validate environment variables
+    const domain = import.meta.env.VITE_AUTH0_DOMAIN;
+    const clientId = import.meta.env.VITE_AUTH0_CLIENT_ID;
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+    if (!domain || !clientId) {
+      throw new Error('Auth0 configuration missing. Please check your .env.local file for VITE_AUTH0_DOMAIN and VITE_AUTH0_CLIENT_ID');
+    }
 
-// Auth UI helpers
-function openAuthModal(mode = 'login') {
-  const modal = document.getElementById('authModal');
-  if (!modal) return;
-  modal.classList.remove('hidden');
-  modal.setAttribute('aria-hidden', 'false');
-  document.getElementById('authMode').checked = (mode === 'signup');
-  document.getElementById('authModalTitle').innerText = (mode === 'signup' ? 'Create account' : 'Login');
-  document.getElementById('authMessage').innerText = '';
-}
-function closeAuthModal() {
-  const modal = document.getElementById('authModal');
-  if (!modal) return;
-  modal.classList.add('hidden');
-  modal.setAttribute('aria-hidden', 'true');
-}
-function showAuthMessage(msg, isError = false) {
-  const el = document.getElementById('authMessage');
-  if (!el) return;
-  el.innerText = msg;
-  el.style.color = isError ? '#ffb4b4' : 'var(--muted)';
-}
+    // Validate domain format
+    if (!domain.includes('.auth0.com') && !domain.includes('.us.auth0.com') && !domain.includes('.eu.auth0.com') && !domain.includes('.au.auth0.com')) {
+      console.warn('Auth0 domain format might be incorrect. Expected format: your-domain.auth0.com');
+    }
 
-function updateAuthUI(user) {
-  const userStatus = document.getElementById('userStatus');
-  const loginBtn = document.getElementById('loginBtn');
-  const logoutBtn = document.getElementById('logoutBtn');
+    auth0Client = await createAuth0Client({
+      domain: domain,
+      clientId: clientId,
+      // Persist tokens across pages / reloads and allow refresh tokens
+      cacheLocation: 'localstorage',
+      useRefreshTokens: true,
+      authorizationParams: {
+        // Redirect back to the same page the user initiated login from
+        redirect_uri: window.location.origin + window.location.pathname
+      }
+    });
 
-  // If none of the auth UI elements exist on this page, skip silently
-  if (!userStatus && !loginBtn && !logoutBtn) return;
+    // Check if user is returning from login
+    if (window.location.search.includes('code=') && window.location.search.includes('state=')) {
+      await handleRedirectCallback();
+    }
 
-  if (user) {
-    if (userStatus) userStatus.innerText = user.email || 'Signed in';
-    if (loginBtn) loginBtn.classList.add('hidden');
-    if (logoutBtn) logoutBtn.classList.remove('hidden');
-  } else {
-    if (userStatus) userStatus.innerText = 'Not signed in';
-    if (loginBtn) loginBtn.classList.remove('hidden');
-    if (logoutBtn) logoutBtn.classList.add('hidden');
+    // Update UI based on authentication state
+    await updateUI();
+  } catch (err) {
+    console.error('Auth0 initialization error:', err);
+    showError(err.message);
   }
-} 
+}
 
-// Wire up auth controls after DOM loaded (we also add listeners in DOMContentLoaded later)
+// Handle redirect callback
+async function handleRedirectCallback() {
+  try {
+    await auth0Client.handleRedirectCallback();
+    // Clean up the URL to remove query parameters
+    window.history.replaceState({}, document.title, window.location.pathname);
+  } catch (err) {
+    console.error('Redirect callback error:', err);
+    showError(err.message);
+  }
+}
+
+// Update UI based on authentication state
+async function updateUI() {
+  try {
+    const isAuthenticated = await auth0Client.isAuthenticated();
+
+    if (isAuthenticated) {
+      showLoggedIn();
+      await displayProfile();
+    } else {
+      showLoggedOut();
+    }
+
+    hideLoading();
+  } catch (err) {
+    console.error('UI update error:', err);
+    showError(err.message); 
+  }
+}
+
+// Display user profile
+async function displayProfile() {
+  try {
+    const user = await auth0Client.getUser();
+    const placeholderImage = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='50' height='50' viewBox='0 0 50 50'%3E%3Ccircle cx='25' cy='25' r='25' fill='%2363b3ed'/%3E%3Cpath d='M55 50c8.28 0 15-6.72 15-15s-6.72-15-15-15-15 6.72-15 15 6.72 15 15 15zm0 7.5c-10 0-30 5.02-30 15v3.75c0 2.07 1.68 3.75 3.75 3.75h52.5c2.07 0 3.75-1.68 3.75-3.75V72.5c0-9.98-20-15-30-15z' fill='%23fff'/%3E%3C/svg%3E`;
+
+    profileContainer.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 5px;">
+        <img 
+          src="${user.picture || placeholderImage}" 
+          alt="${user.name || 'User'}" 
+          class="profile-picture"
+          onerror="this.src='${placeholderImage}'"
+        />
+        <div style="text-align: center;">
+          <div class="profile-email" style="font-weight: 600; color: #a0aec0;">
+            ${user.email || 'No email provided'}
+          </div>
+        </div>
+      </div>
+    `;
+  } catch (err) {
+    console.error('Error displaying profile:', err);
+  }
+}
+
+// Event handlers
+async function login() {
+  try {
+    await auth0Client.loginWithRedirect({
+      authorizationParams: {
+        redirect_uri: window.location.origin + window.location.pathname
+      }
+    });
+  } catch (err) {
+    console.error('Login error:', err);
+    showError(err.message);
+  }
+}
+
+async function logout() {
+  try {
+    await auth0Client.logout({
+      logoutParams: {
+        returnTo: window.location.origin
+      }
+    });
+  } catch (err) {
+    console.error('Logout error:', err);
+    showError(err.message);
+  }
+}
+
+function hideLoading() {
+  loading.style.display = 'none';
+}
+
+function showError(message) {
+  loading.style.display = 'none';
+  error.style.display = 'block';
+  errorDetails.textContent = message;
+}
+
+function showLoggedIn() {
+  loggedOutSection.style.display = 'none';
+  loggedInSection.style.display = 'flex';
+}
+
+function showLoggedOut() {
+  loggedInSection.style.display = 'none';
+  loggedOutSection.style.display = 'flex';
+}
+// Event listeners
+loginBtn.addEventListener('click', login);
+
+logoutBtn.addEventListener('click', logout);
+
+// Initialize the app
+initAuth0();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const PROXY_BASE = "https://itad-proxy.ivanprokopenkose7en.workers.dev";
 
 let matchingGames = [];
 function showHints(hints) {
@@ -71,7 +222,8 @@ function showHints(hints) {
   const hintList = hintsContainer.appendChild(document.createElement("ul"));
   hints.forEach((hint) => {
     const hintEl = hintList.appendChild(document.createElement("li"))
-    hintEl.innerHTML = `<a href="game.html?appid=${hint.id}&slug=${hint.title}">${hint.title}</a>`;
+    // Use /game (no .html) to avoid server redirect that may strip query params
+    hintEl.innerHTML = `<a href="/game?appid=${hint.id}&slug=${encodeURIComponent(hint.title)}">${hint.title}</a>`;
   });
 
 }
@@ -137,6 +289,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(queryString);
   const appID = urlParams.get('appid');
   const slug = urlParams.get('slug');
+  const code = urlParams.get('code');
+  if (code) {
+
+  }
 
 
   // If there's a appID in the URL, fetch and display that game
@@ -179,62 +335,6 @@ document.addEventListener("DOMContentLoaded", () => {
         .catch((error) => console.error("Error fetching hints:", error));
     });
   }
-
-  // --- Firebase Auth UI wiring ---
-  const loginBtn = document.getElementById('loginBtn');
-  const logoutBtn = document.getElementById('logoutBtn');
-  const authForm = document.getElementById('authForm');
-  const authCancel = document.getElementById('authCancel');
-  const authModeCheckbox = document.getElementById('authMode');
-  const authModal = document.getElementById('authModal');
-
-  if (loginBtn) loginBtn.addEventListener('click', () => openAuthModal('login'));
-  if (logoutBtn) logoutBtn.addEventListener('click', () => {
-    signOut(auth).then(() => {
-      showAuthMessage('Signed out');
-    }).catch((error) => {
-      console.error('Sign out error', error);
-    });
-  });
-
-  if (authCancel) authCancel.addEventListener('click', () => closeAuthModal());
-  if (authModal) authModal.addEventListener('click', (e) => { if (e.target === authModal) closeAuthModal(); });
-
-  if (authForm) authForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const email = document.getElementById('authEmail').value.trim();
-    const password = document.getElementById('authPassword').value;
-    const isSignup = authModeCheckbox && authModeCheckbox.checked;
-
-    showAuthMessage('Processing...');
-
-    if (isSignup) {
-      createUserWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          showAuthMessage('Account created.');
-          closeAuthModal();
-        })
-        .catch((error) => {
-          console.error('Signup error', error.code, error.message, error);
-          showAuthMessage(`${error.code}: ${error.message}`, true);
-        });
-    } else {
-      signInWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          showAuthMessage('Signed in.');
-          closeAuthModal();
-        })
-        .catch((error) => {
-          console.error('Signin error', error.code, error.message, error);
-          showAuthMessage(`${error.code}: ${error.message}`, true);
-        });
-    }
-  });
-
-  // React to auth changes
-  onAuthStateChanged(auth, (user) => {
-    updateAuthUI(user);
-  });
 
 });
 

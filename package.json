@@ -1,0 +1,19 @@
+{
+  "name": "nake",
+  "version": "1.0.0",
+  "description": "- to projekt agregatora gier wideo stworzony w oparciu na [*IsThereAnyDeal API*](https://docs.isthereanydeal.com/). W nim będzie można znaleźć najlepsze oferty gier, najniższe ceny, promocje itd. Także porównywać ceny z różnych platform **(Steam, Epic Store, GoG Games, Ubisoft store, Gamesplanet itd.)**.",
+  "main": "scripts.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "author": "Ivan Prokopenko",
+  "type": "module",
+  "dependencies": {
+    "@auth0/auth0-spa-js": "^2.4.1"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}
