@@ -322,10 +322,17 @@ document.addEventListener("DOMContentLoaded", () => {
     if (cachedDeals) {
       renderDeals(cachedDeals, slug);
     } else {
-      fetch(`${PROXY_BASE}?endpoint=/games/prices/v2&id=${appID}`)
+      fetch(`${PROXY_BASE}?endpoint=/games/prices/v3`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify([appID])
+      })
         .then((response) => response.json())
-        .then((gamePrices) => {
-
+        .then((pricesArray) => {
+          // API returns array with one object: [{ id, historyLow, deals }]
+          const gamePrices = pricesArray[0];
           renderDeals(gamePrices, slug);
           setCachedData(cacheKey, gamePrices);
         })
