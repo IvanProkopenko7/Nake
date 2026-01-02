@@ -322,12 +322,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (cachedDeals) {
       renderDeals(cachedDeals, slug);
     } else {
-      fetch(`${PROXY_BASE}?endpoint=/games/prices/v2&appid=${appID}`)
+      fetch(`${PROXY_BASE}?endpoint=/games/prices/v2&id=${appID}`)
         .then((response) => response.json())
         .then((gamePrices) => {
 
-          renderDeals(gamePrices[0], slug);
-          setCachedData(cacheKey, gamePrices[0]);
+          renderDeals(gamePrices, slug);
+          setCachedData(cacheKey, gamePrices);
         })
         .catch((error) => console.error("Error fetching game info:", error));
     }
