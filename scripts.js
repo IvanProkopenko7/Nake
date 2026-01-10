@@ -272,34 +272,40 @@ async function fetchSteamDescription(appid) {
 }
 */
 
-// IGDB API implementation for fetching game summary
-async function fetchIGDBSummary(gameName) {
-  if (!gameName) return null;
-  console.log(gameName)
+// Helper function to try an IGDB query
+async function tryIGDBQuery(queryCondition) {
   try {
     const response = await fetch(`${PROXY_BASE}?api=igdb&endpoint=games`, {
       method: 'POST',
-      body: `fields name,storyline,summary; where slug = "${gameName}"; limit 1;` 
+      body: `fields name,storyline,summary; ${queryCondition}; limit 1;`
     });
-
-    if (!response.ok) {
-      console.error("IGDB API error:", response.statusText);
-      return null;
-    }
-
-    const data = await response.json();
-    console.log("IGDB data:", data);
-
-    if (data && data.length > 0) {
-      if (data[0].summary) {
-        return { text: data[0].summary, source: 'IGDB' };
-      }
-      if (data[0].storyline) {
-        return { text: data[0].storyline, source: 'IGDB' };
-      }
-    }
+    if (!response.ok) return null;
+    return await response.json();
   } catch (error) {
-    console.error("Error fetching IGDB summary:", error);
+    console.error("Error in IGDB query:", error);
+    return null;
+  }
+}
+
+// IGDB API implementation with fallback strategies
+async function fetchIGDBSummary(gameInfo) {
+  if (!gameInfo) return null;
+  
+  // Try slug first
+  let data = await tryIGDBQuery(`where slug = "${gameInfo.slug}"`);
+  
+  // If slug fails, try title search
+  if (!data || data.length === 0) {
+    data = await tryIGDBQuery(`search "${gameInfo.title}"`);
+  }
+
+  if (data && data.length > 0) {
+    if (data[0].summary) {
+      return { text: data[0].summary, source: 'IGDB' };
+    }
+    if (data[0].storyline) {
+      return { text: data[0].storyline, source: 'IGDB' };
+    }
   }
   return null;
 }
@@ -404,16 +410,16 @@ async function resolveSlugToId(slug) {
 }
 
 // Main function to fetch game description with fallback
-async function fetchGameDescription(gameName) {
-  if (!gameName) return { text: 'Description unavailable', source: null };
+async function fetchGameDescription(gameInfo) {
+  if (!gameInfo) return { text: 'Description unavailable', source: null };
 
   // Try IGDB first
-  let result = await fetchIGDBSummary(gameName);
+  let result = await fetchIGDBSummary(gameInfo);
 
   // If IGDB returns short or promotional text, try RAWG
   if (!result || !isValidDescription(result.text)) {
     console.log('IGDB description inadequate, trying RAWG...');
-    const rawgResult = await fetchRAWGDescription(gameName);
+    const rawgResult = await fetchRAWGDescription(gameInfo.title);
     if (rawgResult && isValidDescription(rawgResult.text)) {
       result = rawgResult;
     }
@@ -446,7 +452,7 @@ async function showGameSidebar(gameInfo) {
   sidebar.innerHTML = "";
 
   // Fetch game description with fallback
-  const descriptionResult = await fetchGameDescription(gameInfo.slug);
+  const descriptionResult = await fetchGameDescription(gameInfo);
   const descriptionText = descriptionResult.text;
   const source = descriptionResult.source;
 
